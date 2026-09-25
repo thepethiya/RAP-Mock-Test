@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RAP Insurance Agent — Mock Tests</title>
+<style>
+  :root{--bg:#f4f6f9;--card:#fff;--ink:#1a1d23;--muted:#6b7280;--line:#e5e7eb;
+        --ok:#0f9d58;--okbg:#e6f4ea;--bad:#d93025;--badbg:#fce8e6;
+        --accent:#1a56db;--warn:#f59e0b}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       background:var(--bg);color:var(--ink)}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;
+         display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+  h1{font-size:17px;margin:0}
+  main{max-width:860px;margin:0 auto;padding:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px}
+  button{font:inherit;padding:10px 16px;border-radius:8px;border:1px solid var(--line);
+         background:#fff;cursor:pointer;transition:.15s}
+  button:hover:not(:disabled){border-color:var(--accent)}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button.primary:hover:not(:disabled){filter:brightness(1.08)}
+  button.danger{background:#fff;color:var(--bad);border-color:var(--bad)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .spacer{flex:1}
+  .muted{color:var(--muted);font-size:14px}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#eef2ff;
+        color:var(--accent);font-size:12px;white-space:nowrap}
+  .pill.ok{background:var(--okbg);color:var(--ok)}
+  .pill.bad{background:var(--badbg);color:var(--bad)}
+  .pill.warn{background:#fef3c7;color:#92400e}
+  .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:12px 0}
+  .bar>i{display:block;height:100%;background:var(--accent);transition:width .2s}
+
+  /* Option buttons */
+  .opt{display:flex;gap:12px;width:100%;text-align:left;padding:14px 16px;margin:8px 0;
+       border:2px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;align-items:flex-start}
+  .opt .key{flex:0 0 28px;height:28px;border-radius:6px;background:#f0f2f5;
+            display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .opt.picked{border-color:var(--accent);background:#eef2ff}
+  .opt.picked .key{background:var(--accent);color:#fff}
+  .opt.correct{border-color:var(--ok);background:var(--okbg)}
+  .opt.correct .key{background:var(--ok);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:var(--badbg)}
+  .opt.wrong .key{background:var(--bad);color:#fff}
+  .opt.review{cursor:default}
+
+  .explain{margin-top:14px;padding:14px;border-left:4px solid var(--accent);
+           background:#f8faff;border-radius:0 8px 8px 0;font-size:15px}
+  .explain.ok{border-color:var(--ok);background:var(--okbg)}
+  .explain.bad{border-color:var(--bad);background:var(--badbg)}
+
+  /* Chapter grid */
+  .chgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .chcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;
+          display:flex;flex-direction:column;gap:10px}
+  .chcard h3{margin:0;font-size:15px;line-height:1.35}
+  .chcard .meta{font-size:13px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+  .chcard button{align-self:flex-start}
+
+  /* Palette */
+  .palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px;margin-top:12px}
+  .palette button{padding:8px 0;font-size:13px;font-weight:600;min-width:0}
+  .palette button.answered{background:#eef2ff;border-color:var(--accent);color:var(--accent)}
+  .palette button.current{border-color:var(--accent);box-shadow:0 0 0 2px #c7d2fe}
+  .palette button.correct{background:var(--okbg);border-color:var(--ok);color:var(--ok)}
+  .palette button.wrong{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+
+  /* Score board */
+  .board{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0}
+  .board .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+  .board .stat span{font-size:13px;color:var(--muted)}
+  .board .stat b{display:block;font-size:24px;line-height:1.2;margin-top:4px}
+  .verdict{text-align:center;padding:24px;border-radius:12px;margin-bottom:16px}
+  .verdict.pass{background:var(--okbg)}
+  .verdict.fail{background:var(--badbg)}
+  .verdict h2{margin:0 0 6px;font-size:24px}
+  .verdict .big{font-size:56px;font-weight:800;line-height:1.1;margin:8px 0}
+  .review{margin-top:16px}
+  .review .q{padding:16px 0;border-bottom:1px solid var(--line)}
+  .review .q:last-child{border-bottom:none}
+  .clock{font-variant-numeric:tabular-nums;font-weight:700}
+  .clock.warn{color:var(--warn)}
+  .clock.danger{color:var(--bad)}
+  .empty{text-align:center;color:var(--muted);padding:40px 20px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="appTitle">🛡️ RAP Insurance Agent — Mock Tests</h1>
+  <div class="row">
+    <span class="pill" id="bankInfo">—</span>
+    <button id="homeBtn">Home</button>
+  </div>
+</header>
+<main id="app"></main>
+
+<script src="questions.js"></script>
+<script>
+/* ============================================================
+   APP CODE — you normally don't need to edit below this line.
+   Edit questions.js instead.
+   ============================================================ */
+
+const CONFIG = QUESTION_BANK.config || { secondsPerQuestion: 50, passPercent: 35 };
+const CHAPTERS = QUESTION_BANK.chapters || [];
+
+/* ---------- storage helpers ---------- */
+const load = (k,d)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? d; }catch{ return d; } };
+const save = (k,v)=> localStorage.setItem(k, JSON.stringify(v));
+
+let PROGRESS  = load('rap_progress', {});   // chId -> { best, last, attempts }
+let BOOKMARKS = load('rap_bookmarks', []);  // [qid]
+
+/* ---------- tiny helpers ---------- */
+const app = document.getElementById('app');
+const $   = id => document.getElementById(id);
+const on  = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+const esc = (s='') => String(s).replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { a=a.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a; };
+const fmtClock = ms => {
+  const t = Math.max(0, Math.ceil(ms/1000));
+  const h = Math.floor(t/3600), m = Math.floor((t%3600)/60), s = t%60;
+  return (h?h+':':'') + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+};
+const chapterById = id => CHAPTERS.find(c => c.id === id);
+
+/* ---------- session state ---------- */
+const S = { chapter:null, queue:[], answers:{}, i:0, endsAt:null, timer:null, submitted:false };
+
+function stopTimer(){ if(S.timer){ clearInterval(S.timer); S.timer=null; } }
+
+function tick(){
+  const left = S.endsAt - Date.now();
+  const el = $('clock');
+  if (el){
+    el.textContent = fmtClock(left);
+    el.classList.toggle('warn',   left < 5*60*1000 && left >= 60*1000);
+    el.classList.toggle('danger', left < 60*1000);
+  }
+  if (left <= 0){ stopTimer(); submitTest(true); }
+}
+
+function startTimer(){
+  stopTimer();
+  tick();
+  S.timer = setInterval(tick, 500);
+}
+
+/* =========================================================
+   HOME
+   ========================================================= */
+function home(){
+  stopTimer();
+  const totalQ = CHAPTERS.reduce((n,c)=>n+c.questions.length, 0);
+  const doneCh = CHAPTERS.filter(c => PROGRESS[c.id]).length;
+  $('bankInfo').textContent = `${totalQ} questions · ${CHAPTERS.length} chapters`;
+  $('appTitle').textContent = `🛡️ ${CONFIG.examName || 'Mock Tests'}`;
+
+  app.innerHTML = `
+    <div class="card">
+      <div class="row">
+        <div>
+          <h2 style="margin:0">Chapter-wise practice</h2>
+          <div class="muted">
+            ${totalQ} questions across ${CHAPTERS.length} chapters ·
+            ${CONFIG.secondsPerQuestion}s per question ·
+            pass mark ${CONFIG.passPercent}%
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <span class="pill">${doneCh}/${CHAPTERS.length} attempted</span>
+      </div>
+    </div>
+
+    <div class="chgrid">
+      ${CHAPTERS.map(c => {
+        const p = PROGRESS[c.id];
+        const hasQ = c.questions.length > 0;
+        const totalSec = c.questions.length * CONFIG.secondsPerQuestion;
+        return `
+          <div class="chcard">
+            <h3>${esc(c.title)}</h3>
+            <div class="meta">
+              <span>${c.questions.length} Q</span>
+              <span>·</span>
+              <span>${Math.round(totalSec/60)} min</span>
+              ${p ? `<span>·</span><span>Best <b>${p.best}%</b></span>` : ''}
+            </div>
+            ${p ? `<div class="bar"><i style="width:${p.best}%"></i></div>` : ''}
+            ${hasQ
+              ? `<button class="primary" data-start="${c.id}">
+                   ${p ? 'Retake test' : 'Start test'}
+                 </button>`
+              : `<button disabled>Coming soon</button>`}
+          </div>`;
+      }).join('')}
+    </div>
+
+    ${Object.keys(PROGRESS).length ? `
+      <div class="card">
+        <h3 style="margin-top:0">Overall progress</h3>
+        <div class="board">
+          <div class="stat"><span>Chapters attempted</span><b>${doneCh}</b></div>
+          <div class="stat"><span>Average best</span><b>${Math.round(
+            Object.values(PROGRESS).reduce((s,p)=>s+p.best,0) / doneCh
+          )}%</b></div>
+          <div class="stat"><span>Passed chapters</span><b>${Object.values(PROGRESS)
+            .filter(p=>p.best>=CONFIG.passPercent).length}</b></div>
+        </div>
+        <div class="row">
+          <button class="danger" id="resetAll">Reset all progress</button>
+        </div>
+      </div>` : ''}
+  `;
+
+  document.querySelectorAll('[data-start]').forEach(b => {
+    b.onclick = () => startChapter(b.dataset.start);
+  });
+  on('resetAll', () => {
+    if (!confirm('Delete all scores and bookmarks?')) return;
+    localStorage.removeItem('rap_progress');
+    localStorage.removeItem('rap_bookmarks');
+    PROGRESS = {}; BOOKMARKS = [];
+    home();
+  });
+}
+
+/* =========================================================
+   START A CHAPTER TEST
+   ========================================================= */
+function startChapter(chId){
+  const c = chapterById(chId);
+  if (!c || !c.questions.length) return;
+
+  S.chapter = c;
+  // Shuffle question order AND option order (keeps answers fresh each retake)
+  S.queue = shuffle(c.questions).map(q => {
+    const correctText = q.options[q.answer];
+    const opts = shuffle(q.options.slice());
+    return { ...q, opts, correctIdx: opts.indexOf(correctText) };
+  });
+  S.answers = {};
+  S.i = 0;
+  S.submitted = false;
+  S.endsAt = Date.now() + c.questions.length * CONFIG.secondsPerQuestion * 1000;
+
+  renderQuestion();
+  startTimer();
+}
+
+/* =========================================================
+   TEST VIEW
+   ========================================================= */
+function renderQuestion(){
+  const q = S.queue[S.i];
+  const picked = S.answers[q.id];
+  const answered = Object.keys(S.answers).length;
+  const pct = (S.i / S.queue.length) * 100;
+
+  app.innerHTML = `
+    <div class="card">
+      <div class="row">
+        <span class="pill">${esc(S.chapter.title)}</span>
+        <span class="muted">Question ${S.i+1} / ${S.queue.length}</span>
+        <div class="spacer"></div>
+        <span class="pill">⏱ <span class="clock" id="clock">--:--</span></span>
+      </div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+
+      <h2 style="font-size:19px;line-height:1.4;margin:8px 0 18px">${esc(q.question)}</h2>
+
+      <div id="opts">
+        ${q.opts.map((text, idx) => `
+          <button class="opt ${picked===idx?'picked':''}" data-i="${idx}">
+            <span class="key">${String.fromCharCode(65+idx)}</span>
+            <span>${esc(text)}</span>
+          </button>`).join('')}
+      </div>
+
+      <div class="row" style="margin-top:22px">
+        <button id="prev" ${S.i===0?'disabled':''}>← Previous</button>
+        <button id="next" ${S.i===S.queue.length-1?'disabled':''}>Next →</button>
+        <div class="spacer"></div>
+        <span class="muted">${answered}/${S.queue.length} answered</span>
+        <button class="primary" id="submitBtn">Submit test</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row"><b>Question palette</b>
+        <div class="spacer"></div>
+        <span class="muted">Blue = answered · Grey = not answered</span>
+      </div>
+      <div class="palette">
+        ${S.queue.map((qq, idx) => `
+          <button data-goto="${idx}"
+            class="${S.answers[qq.id]!==undefined?'answered':''} ${idx===S.i?'current':''}">
+            ${idx+1}
+          </button>`).join('')}
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('#opts .opt').forEach(b => {
+    b.onclick = () => { S.answers[q.id] = Number(b.dataset.i); renderQuestion(); };
+  });
+  document.querySelectorAll('[data-goto]').forEach(b => {
+    b.onclick = () => { S.i = Number(b.dataset.goto); renderQuestion(); };
+  });
+  on('prev', () => { S.i--; renderQuestion(); });
+  on('next', () => { S.i++; renderQuestion(); });
+  on('submitBtn', () => {
+    const un = S.queue.length - Object.keys(S.answers).length;
+    const msg = un > 0
+      ? `You have ${un} unanswered question${un>1?'s':''}. Submit anyway?`
+      : 'Submit your test now?';
+    if (confirm(msg)) submitTest(false);
+  });
+
+  tick();
+}
+
+/* =========================================================
+   SUBMIT & SCORE
+   ========================================================= */
+function submitTest(auto){
+  if (S.submitted) return;
+  S.submitted = true;
+  stopTimer();
+
+  let correct = 0, wrong = 0, unanswered = 0;
+  S.queue.forEach(q => {
+    const picked = S.answers[q.id];
+    if (picked === undefined) unanswered++;
+    else if (picked === q.correctIdx) correct++;
+    else wrong++;
+  });
+
+  const total = S.queue.length;
+  const percent = Math.round((correct / total) * 100);
+  const pass = percent >= CONFIG.passPercent;
+  const timeUsed = S.chapter.questions.length * CONFIG.secondsPerQuestion * 1000
+                 - (S.endsAt - Date.now());
+
+  // Update progress
+  const prev = PROGRESS[S.chapter.id] || { best:0, attempts:0 };
+  PROGRESS[S.chapter.id] = {
+    best: Math.max(prev.best, percent),
+    last: percent,
+    attempts: prev.attempts + 1,
+    date: Date.now()
+  };
+  save('rap_progress', PROGRESS);
+
+  renderResult({ correct, wrong, unanswered, total, percent, pass, auto, timeUsed });
+}
+
+function renderResult(r){
+  app.innerHTML = `
+    <div class="verdict ${r.pass ? 'pass' : 'fail'}">
+      <h2>${r.pass ? '🎉 PASSED' : '📚 NOT YET'}</h2>
+      <div class="big">${r.percent}%</div>
+      <div class="muted">
+        ${r.correct} correct out of ${r.total} ·
+        pass mark ${CONFIG.passPercent}%
+      </div>
+      ${r.auto ? '<div class="muted" style="margin-top:6px">⏰ Time up — auto-submitted</div>' : ''}
+    </div>
+
+    <div class="board">
+      <div class="stat"><span>Score</span><b>${r.correct}/${r.total}</b></div>
+      <div class="stat"><span>Correct</span><b style="color:var(--ok)">${r.correct}</b></div>
+      <div class="stat"><span>Wrong</span><b style="color:var(--bad)">${r.wrong}</b></div>
+      <div class="stat"><span>Unanswered</span><b>${r.unanswered}</b></div>
+      <div class="stat"><span>Time used</span><b style="font-size:18px">${fmtClock(r.timeUsed)}</b></div>
+      <div class="stat"><span>Result</span>
+        <b class="${r.pass?'':'bad'}" style="color:${r.pass?'var(--ok)':'var(--bad)'}">
+          ${r.pass ? 'Pass' : 'Fail'}
+        </b>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <button class="primary" id="retryWrong">Practise wrong (${r.wrong + r.unanswered})</button>
+        <button id="retake">Retake chapter</button>
+        <button id="home2">Back to home</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Detailed review</h3>
+      <div class="muted" style="margin-bottom:8px">
+        Your answer is highlighted — green if correct, red if wrong. The correct answer is always shown in green.
+      </div>
+      <div class="review">
+        ${S.queue.map((q, idx) => {
+          const picked = S.answers[q.id];
+          const isCorrect = picked === q.correctIdx;
+          const isUn = picked === undefined;
+          return `
+            <div class="q">
+              <div class="row" style="margin-bottom:6px">
+                <span class="pill ${isCorrect?'ok':(isUn?'warn':'bad')}">
+                  Q${idx+1} · ${isCorrect?'Correct':(isUn?'Not answered':'Wrong')}
+                </span>
+                <span class="muted">${esc(q.topic||'')}</span>
+              </div>
+              <div style="font-weight:600;margin-bottom:10px">${esc(q.question)}</div>
+              ${q.opts.map((text, i) => {
+                let cls = 'opt review';
+                if (i === q.correctIdx) cls += ' correct';
+                else if (i === picked) cls += ' wrong';
+                return `<div class="${cls}">
+                  <span class="key">${String.fromCharCode(65+i)}</span>
+                  <span>${esc(text)}
+                    ${i===q.correctIdx ? ' <b style="color:var(--ok)">✓ correct answer</b>' : ''}
+                    ${(i===picked && i!==q.correctIdx) ? ' <b style="color:var(--bad)">✗ your answer</b>' : ''}
+                  </span>
+                </div>`;
+              }).join('')}
+              ${q.explanation ? `
+                <div class="explain ${isCorrect?'ok':'bad'}">
+                  <b>Explanation:</b> ${esc(q.explanation)}
+                </div>` : ''}
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  window.scrollTo({top:0, behavior:'smooth'});
+
+  on('retryWrong', () => {
+    const wrongQs = S.queue.filter(q =>
+      S.answers[q.id] === undefined || S.answers[q.id] !== q.correctIdx);
+    if (!wrongQs.length) return;
+    // Restart a mini-session with only wrong questions
+    S.queue = wrongQs.map(q => {
+      const correctText = q.options[q.answer];
+      const opts = shuffle(q.options.slice());
+      return { ...q, opts, correctIdx: opts.indexOf(correctText) };
+    });
+    S.answers = {}; S.i = 0; S.submitted = false;
+    S.endsAt = Date.now() + S.queue.length * CONFIG.secondsPerQuestion * 1000;
+    renderQuestion();
+    startTimer();
+  });
+  on('retake', () => startChapter(S.chapter.id));
+  on('home2', home);
+}
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+$('homeBtn').onclick = () => {
+  if (S.timer && !S.submitted && !confirm('Abandon the current test?')) return;
+  stopTimer();
+  home();
+};
+home();
+</script>
+</body>
+</html>
